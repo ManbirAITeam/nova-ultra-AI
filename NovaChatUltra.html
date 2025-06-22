@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NovaChat Ultra</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 240px;
+      background: #fff;
+      border-right: 1px solid #ccc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    aside h2 {
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    aside button,
+    aside li {
+      background: #00b386;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    aside ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    aside li {
+      background: none;
+      color: #333;
+      padding: 10px 5px;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    aside li:hover {
+      background: #f0f0f0;
+    }
+
+    main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+
+    .chat-area {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 10px 15px;
+      margin: 8px 0;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+
+    .user {
+      background: #00b386;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background: #f0f0f0;
+      align-self: flex-start;
+    }
+
+    footer {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    footer input {
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    footer button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background: #00b386;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .hidden { display: none; }
+    .active { display: block; padding: 20px; overflow-y: auto; flex-grow: 1; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h2>💬 NovaChat</h2>
+    <button onclick="newChat()">+ New Chat</button>
+    <ul>
+      <li onclick="switchTab('chatbox')">Search chats</li>
+      <li onclick="switchTab('libraryContent')">Library</li>
+      <li onclick="switchTab('imageContent')">Image Generator</li>
+      <li onclick="switchTab('soraContent')">Sora</li>
+      <li onclick="switchTab('apiContent')">APIs</li>
+    </ul>
+    <div style="margin-top:auto; font-size:14px; color:#777;">⚙ Tools</div>
+  </aside>
+
+  <main>
+    <div id="chatbox" class="chat-area active"></div>
+    <div id="libraryContent" class="hidden">📚 Library coming soon...</div>
+    <div id="imageContent" class="hidden">🖼️ Image Generator is not implemented yet.</div>
+    <div id="soraContent" class="hidden">✨ Sora will launch soon!</div>
+    <div id="apiContent" class="hidden">🔑 API section in progress.</div>
+    <footer>
+      <input type="text" id="userInput" placeholder="Ask anything..." />
+      <button onclick="sendMessage()">Send</button>
+    </footer>
+  </main>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const input = document.getElementById("userInput");
+    let chatHistory = [];
+
+    function addMessage(content, sender) {
+      const msg = document.createElement("div");
+      msg.className = "message " + sender;
+      msg.textContent = content;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      chatHistory.push({ content, sender });
+    }
+
+    function sendMessage() {
+      const userInput = input.value.trim();
+      if (!userInput) return;
+      addMessage(userInput, "user");
+      input.value = "";
+
+      // Dummy bot response
+      setTimeout(() => {
+        addMessage(`You said: "${userInput}"`, "bot");
+      }, 500);
+    }
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function switchTab(id) {
+      document.querySelectorAll("main > div").forEach(div => {
+        div.classList.add("hidden");
+        div.classList.remove("active");
+      });
+      document.getElementById(id).classList.remove("hidden");
+      document.getElementById(id).classList.add("active");
+    }
+
+    function newChat() {
+      chatbox.innerHTML = "";
+      chatHistory = [];
+      addMessage("Hi there! I'm NovaChat, your AI assistant 👋", "bot");
+    }
+
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("novaChatHistory", JSON.stringify(chatHistory));
+    });
+
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("novaChatHistory");
+      if (saved) {
+        JSON.parse(saved).forEach(msg => addMessage(msg.content, msg.sender));
+      } else {
+        newChat();
+      }
+    });
+  </script>
+</body>
+</html>
